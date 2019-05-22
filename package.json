@@ -1,0 +1,20 @@
+{
+  "name": "@filippovigani/listenjs-server",
+  "version": "0.0.1",
+  "description": "Notify listeners on REST endpoints for resource changes",
+  "license": "GPLv3",
+  "repository": "VeegaP/listenjs-server",
+  "main": "index.js",
+  "keywords": [
+    "listenjs",
+    "observe",
+    "observable",
+    "rxjs",
+    "ws",
+    "websocket",
+    "server"
+  ],
+  "dependencies": {
+    "socket.io": "^2.2.0"
+  }
+}
