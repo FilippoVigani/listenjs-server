@@ -28,7 +28,12 @@ const notify = function (path, payload){
 	io.to(path).emit('update', payload)
 }
 
+const notifyDeletion = function (path){
+	io.to(path).emit('delete')
+}
+
 module.exports = {
 	setup: setup,
-	notify: notify
+	notify: notify,
+	notifyDeletion: notifyDeletion
 }
