@@ -5,9 +5,18 @@ const setup = function (server) {
 	if (io) io.close()
 	io = require('socket.io')(server)
 
+	io.use((socket, next) => {
+		const path = socket.handshake.query.path
+		if (path) {
+			return next();
+		}
+		return next(new Error('No path specified.'));
+	})
+
 	io.on('connect', function (socket) {
-		console.log(`Someone just connected!`)
-		console.log(socket.handshake)
+		const path = socket.handshake.query.path
+		console.log(`Someone just connected, listening on path ${path}!`)
+		socket.join(path)
 
 		socket.on('disconnect', function () {
 			console.log('Someone disconnected!')
@@ -16,7 +25,7 @@ const setup = function (server) {
 }
 
 const notify = function (path, payload){
-	io.of(path).emit('update', payload)
+	io.to(path).emit('update', payload)
 }
 
 module.exports = {
