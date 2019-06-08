@@ -1,10 +1,10 @@
 {
   "name": "@filippovigani/listenjs-server",
-  "version": "0.1.1",
+  "version": "0.2.9",
   "description": "Notify listeners on REST endpoints for resource changes",
   "license": "GPLv3",
   "repository": "VeegaP/listenjs-server",
-  "main": "index.js",
+  "main": "listenjs_server.js",
   "keywords": [
     "listenjs",
     "observe",
@@ -15,6 +15,7 @@
     "server"
   ],
   "dependencies": {
-    "socket.io": "^2.2.0"
+    "uuid": "^3.3.2",
+    "ws": "^7.0.0"
   }
 }
