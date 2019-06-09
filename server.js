@@ -6,14 +6,24 @@ class Server{
 	constructor(options){
 		this.wsServer = new WebSocket.Server(options)
 
+		this.pingInterval = options.pingInterval || 5000
+		this.pingTimeout = options.pingTimeout || 5000
+		this.handshakeTimeout = options.handshakeTimeout || 10000
+
 		this.clientManagers = []
 
 		this.wsServer.on('connection', (socket, request) => {
+
+			let handshakeTimer = setTimeout(() => {
+				socket.close(1000, `No handshake received withing ${this.handshakeTimeout} ms.`)
+			}, this.handshakeTimeout)
+
 			socket.on('message', eventString => {
 				const event = JSON.parse(eventString)
 				let clientManager = this.clientManagers.find(cm => cm.clientId === event.clientId)
 
 				if(event.action === Server.Event.HANDSHAKE){
+					clearTimeout(handshakeTimer)
 					if (!clientManager){
 						clientManager = new ClientManager(uuid())
 						this.clientManagers.push(clientManager)
@@ -24,10 +34,13 @@ class Server{
 
 					const handshakeAck = {
 						action: Server.Event.HANDSHAKE_ACK,
-						clientId: clientManager.clientId
+						clientId: clientManager.clientId,
+						pingInterval: this.pingInterval,
+						pingTimeout: this.pingTimeout
 					}
 
 					socket.send(JSON.stringify(handshakeAck))
+					return
 				}
 
 				if (!clientManager){
@@ -35,6 +48,9 @@ class Server{
 					socket.close(1000, "No handshake received.")
 					return
 				}
+
+				/* Reset ping timeout even it it's not a heartbeat packet, it's still lively */
+				clientManager.resetPingTimeout(this.pingTimeout + this.pingInterval)
 
 				if (event.action === Server.Event.SUBSCRIBE){
 					const {observerId, path} = event
@@ -62,14 +78,11 @@ class Server{
 				}
 
 				if (event.action === Server.Event.HEARTBEAT){
-					const {observerId, path} = event
-					clientManager.addObserver(observerId, path)
-
-					const unsubscribeAck = {
+					const heartbeatAck = {
 						action: Server.Event.HEARTBEAT_ACK
 					}
 
-					socket.send(JSON.stringify(unsubscribeAck))
+					socket.send(JSON.stringify(heartbeatAck))
 				}
 			})
 
